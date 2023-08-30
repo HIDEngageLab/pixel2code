@@ -1,0 +1,9 @@
+# Copyright (c) 2023, Roman Koch, koch.roman@gmail.com
+# All rights reserved
+#
+# SPDX-License-Identifier: MIT
+
+pip==23.3
+pypng==0.20220715.0
+setuptools==70.0.0
+numpy==1.25.2
