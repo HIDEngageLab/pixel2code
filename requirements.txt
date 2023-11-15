@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-pip==23.1.2
+pip==23.3
 pypng==0.20220715.0
 setuptools==65.5.1
 numpy==1.25.2
