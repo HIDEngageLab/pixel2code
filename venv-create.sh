@@ -1,28 +1,33 @@
-#!/bin/bash
+      - name: Run initialize-command.sh
+        run: |
+          chmod +x ${{ github.workspace }}/meta-emblincram/toolbox/initialize-command.sh
+          ${{ github.workspace }}/meta-emblincram/toolbox/initialize-command.sh ${{ github.workspace }}
 
-# Copyright (c) 2023, Roman Koch, koch.roman@gmail.com
-# All rights reserved
-#
-# SPDX-License-Identifier: MIT
+      - name: Run Yocto Build
+        run: |
+          cd ..
+          pwd
+          ls
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            ghcr.io/emblincram/devcon:latest /bin/bash -i -c "
+              set -euo pipefail
+              chmod +x ${{ github.workspace }}/meta-emblincram/toolbox/post-create-command.sh
+              ${{ github.workspace }}/meta-emblincram/toolbox/post-create-command.sh ${{ github.workspace }}
+              source activate-env.sh
+              bitbake core-image-full-cmdline 2>&1 | tee build-log.txt
+          "
 
-if ! command -v python3 >/dev/null 2>&1; then
-    echo "python3 could not be found"
-    exit
-fi
+      - name: Upload Build Log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yocto-build-log
+          path: build-log.txt
 
-venv_path=.venv
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: yocto-build
+          path: build/tmp/deploy/images/
 
-if [ -d "${venv_path}" ]; then
-    echo "warning: venv ${venv_path} exists"
-else
-    python3 -m venv $venv_path
-    if [ $? -ne 0 ]; then
-        echo "error: can't create venv ${venv_path}"
-    fi
-fi
-
-if [ $? -ne 0 ]; then
-    echo "error: can't create venv"
-else
-    . $venv_path/bin/activate && python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt && deactivate
-fi
